@@ -32,7 +32,7 @@ async function getGamesData() {
 export default async function Home() {
   const dalygame: GameProps = await getDalyGame();
   const data: GameProps[] = await getGamesData();
-  console.log(data);
+
   return (
     <main className="w-full ">
       <Container>

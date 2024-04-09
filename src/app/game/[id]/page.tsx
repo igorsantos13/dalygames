@@ -4,6 +4,13 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import Label from "./components/label";
 import GameCard from "@/components/GameCard";
+import { Metadata } from "next";
+
+interface PropsParams {
+  params: {
+    id: string;
+  };
+}
 
 async function getData(id: string) {
   try {
@@ -29,6 +36,36 @@ async function getGameSorted() {
   }
 }
 
+export async function generateMetadata({
+  params,
+}: PropsParams): Promise<Metadata> {
+  try {
+    const response: GameProps = await fetch(
+      `${process.env.NEXT_API_URL}/next-api/?api=game&id=${params.id}`,
+      { cache: "no-store" }
+    )
+      .then((res) => res.json())
+      .catch(() => {
+        return {
+          title: "DalyGames - Descubra jogos incríveis para se divertir",
+        };
+      });
+
+    return {
+      title: response.title,
+      description: `${response.description.slice(0.1)}...`,
+      openGraph: {
+        title: response.title,
+        images: [response.image_url],
+      },
+    };
+  } catch (err) {
+    return {
+      title: "DalyGames - Descubra jogos incríveis para se divertir",
+    };
+  }
+}
+
 export default async function Game({
   params: { id },
 }: {
@@ -43,9 +80,9 @@ export default async function Game({
 
   return (
     <main className="w-full text-black">
-      <div className="bg-black h-80 sm:h-96 opacity-75">
+      <div className="bg-black h-80 sm:h-96 w-full relative">
         <Image
-          className="object-cover w-full h-80 sm:96 opacity-75"
+          className="object-cover w-full h-80 sm:h-96 opacity-75"
           src={data.image_url}
           alt={data.title}
           priority={true}
@@ -61,7 +98,7 @@ export default async function Game({
 
         <h2 className="font-bold text-lg mt-7 mb-2">Categorias</h2>
         <div className="flex gap-2 flex-wrap">
-          {data.platform.map((item) => (
+          {data.platforms.map((item) => (
             <Label name={item} key={item}></Label>
           ))}
         </div>
@@ -73,7 +110,7 @@ export default async function Game({
           ))}
         </div>
 
-        <p className="mt-7 mb-2">
+        <p className="mt-7 mb-2 flex w-full gap-2">
           <strong>Data de lançamento:</strong>
           {data.release}
         </p>
